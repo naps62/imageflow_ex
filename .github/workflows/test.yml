@@ -15,6 +15,8 @@ jobs:
       matrix:
         elixir: ['1.8', '1.9', '1.10', '1.11']
 
+    runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1
@@ -26,9 +28,6 @@ jobs:
         with:
           toolchain: stable
           override: true
-
-      - name: Install dependencies
-        run: apk add git
 
       - name: Setup Deps Cache
         uses: actions/cache@v1
