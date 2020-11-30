@@ -11,8 +11,10 @@ defmodule Imageflow do
 
   def test do
     with {:ok, j} <- Job.create(),
-         Job.add_input(j, 0, @img) do
-      Job.message(j, "v0.1/get_image_info", %{io_id: 0})
+         :ok <- Job.add_input(j, 0, @img),
+         r <- Job.message(j, "v0.1/get_image_info", %{io_id: 0}),
+         :ok <- Job.destroy(j) do
+      r
     end
   end
 end
