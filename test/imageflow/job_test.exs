@@ -92,7 +92,6 @@ defmodule Imageflow.JobTest do
 
       :ok = Job.add_input_file(job, 0, @img_path)
       {:ok, resp} = Job.message(job, "v0.1/get_image_info", %{io_id: 0})
-      IO.inspect(resp)
 
       assert get_in(resp, ["success"]) == true
       assert get_in(resp, ["code"]) == 200
@@ -133,10 +132,10 @@ defmodule Imageflow.JobTest do
       }
 
       {:ok, %{"success" => true}} = Job.message(job, "v0.1/execute", task)
-      :ok = Job.save_output_to_file(job, 1, "output.png")
+      :ok = Job.save_output_to_file(job, 1, "/tmp/output.png")
 
       job2 = Job.create!()
-      :ok = Job.add_input_file(job2, 0, "output.png")
+      :ok = Job.add_input_file(job2, 0, "/tmp/output.png")
       {:ok, resp} = Job.message(job2, "v0.1/get_image_info", %{io_id: 0})
 
       assert get_in(resp, ["data", "image_info", "image_width"]) == 50
