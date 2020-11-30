@@ -8,8 +8,6 @@ mod atoms {
     rustler::rustler_atoms! {
         atom ok;
         atom error;
-        //atom __true__ = "true";
-        //atom __false__ = "false";
     }
 }
 
@@ -91,6 +89,7 @@ pub fn job_get_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term
 
 pub fn job_save_output_to_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
+
     let io_id: i32 = args[1].decode()?;
     let path: String = args[2].decode()?;
 
