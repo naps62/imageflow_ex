@@ -29,10 +29,13 @@ impl Job {
         ctx.add_copied_input_buffer(io_id, bytes).unwrap();
     }
 
-    pub fn add_input_file(&self, io_id: i32, path: &String) {
+    pub fn add_input_file(&self, io_id: i32, path: &String) -> Result<(), FlowError> {
         let mut ctx = self.inner.lock().unwrap();
 
-        ctx.add_file(io_id, IoDirection::In, path.as_str()).unwrap();
+        match ctx.add_file(io_id, IoDirection::In, path.as_str()) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
     }
 
     pub fn add_output_buffer(&self, io_id: i32) {

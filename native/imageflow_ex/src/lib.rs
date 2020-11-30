@@ -29,6 +29,12 @@ rustler::rustler_export_nifs! {
     None
 }
 
+macro_rules! job {
+    ($id:expr) => {{
+        Job::load_from_id($id.decode()?).ok().unwrap()
+    }};
+}
+
 fn get_long_version_string<'a>(_env: Env<'a>, _args: &[Term<'a>]) -> String {
     imageflow_types::version::one_line_version()
 }
@@ -47,67 +53,57 @@ pub fn job_destroy<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Erro
 }
 
 pub fn job_add_input_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
-
     let io_id: i32 = args[1].decode()?;
     let bytes: Binary = args[2].decode()?;
 
-    job.add_input_buffer(io_id, bytes.as_slice());
+    job!(args[0]).add_input_buffer(io_id, bytes.as_slice());
 
     Ok(atoms::ok().encode(env))
 }
 
 pub fn job_add_input_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
-
     let io_id: i32 = args[1].decode()?;
     let path: String = args[2].decode()?;
 
-    job.add_input_file(io_id, &path);
-
-    Ok(atoms::ok().encode(env))
+    match job!(args[0]).add_input_file(io_id, &path) {
+        Ok(_) => Ok(atoms::ok().encode(env)),
+        Err(e) => Ok((atoms::error(), e.message).encode(env)),
+    }
 }
 
 pub fn job_add_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
-
     let io_id: i32 = args[1].decode()?;
 
-    job.add_output_buffer(io_id);
+    job!(args[0]).add_output_buffer(io_id);
 
     Ok(atoms::ok().encode(env))
 }
 
 pub fn job_get_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
     let io_id: i32 = args[1].decode()?;
 
-    let buffer = job.get_output_buffer(io_id).unwrap();
-
-    Ok((atoms::ok(), buffer.encode(env)).encode(env))
+    match job!(args[0]).get_output_buffer(io_id) {
+        Ok(buffer) => Ok((atoms::ok(), buffer).encode(env)),
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env)),
+    }
 }
 
 pub fn job_save_output_to_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
-
     let io_id: i32 = args[1].decode()?;
     let path: String = args[2].decode()?;
 
-    job.save_output_to_file(io_id, &path);
-
-    Ok(atoms::ok().encode(env))
+    match job!(args[0]).save_output_to_file(io_id, &path) {
+        Ok(_) => Ok(atoms::ok().encode(env)),
+        Err(e) => Ok((atoms::error(), e.to_string()).encode(env)),
+    }
 }
 
 pub fn job_message<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let job = Job::load_from_id(args[0].decode()?).ok().unwrap();
-
     let method: String = args[1].decode()?;
     let message: String = args[2].decode()?;
 
-    let ret = match job.message(&method, &message) {
-        Ok(resp) => (atoms::ok(), resp.response_json.encode(env)),
-        Err(resp) => (atoms::error(), resp.response_json.encode(env)),
-    };
-
-    Ok(ret.encode(env))
+    match job!(args[0]).message(&method, &message) {
+        Ok(resp) => Ok((atoms::ok(), resp.response_json.encode(env)).encode(env)),
+        Err(resp) => Ok((atoms::error(), resp.response_json.encode(env).encode(env)).encode(env)),
+    }
 }
