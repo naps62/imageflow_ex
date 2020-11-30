@@ -89,27 +89,27 @@ constrains the image to 50px of width, and saves the output to buffer `1`:
 
 ```elixir
 task = %{
-  "framewise" => %{
-    "steps" => [
+framewise: %{
+    steps: [
       # first step is to decode buffer 0
       %{
-        "decode" => %{
-          "io_id" => 0
+        decode: %{
+          io_id: 0
         }
       },
       # then constrain with to 50px
       %{
-        "constrain" => %{
-          "mode" => "within",
-          "w" => 50
+        constrain: %{
+          mode: "within",
+          w: 50
         }
       },
       # and encode current result to buffer 1
       %{
-        "encode" => %{
-          "io_id" => 1,
-          "preset" => %{
-            "pngquant" => %{"quality" => 80}
+        encode: %{
+          io_id: 1,
+          preset: %{
+            pngquant: %{"quality" => 80}
           }
         }
       }
