@@ -1,6 +1,6 @@
 # ImageflowEx
 
-[imageflow-github]: github.com/imazen/imageflow
+[imageflow-github]: https://github.com/imazen/imageflow
 [imageflow-json-docs]: https://docs.imageflow.io/json/introduction.html
 [my-website]: https://naps62.com
 
