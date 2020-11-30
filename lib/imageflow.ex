@@ -4,7 +4,7 @@ defmodule Imageflow do
   def get_long_version_string(), do: Native.get_long_version_string()
 
   @input "input.jpg"
-  @output "output.jpg"
+  @output "output.png"
 
   @steps %{
     framewise: %{
@@ -40,6 +40,12 @@ defmodule Imageflow do
     |> Job.add_output_buffer(1)
     |> Job.message("v0.1/execute", @steps)
     |> Job.save_output_to_file(1, @output)
+
+    {:ok, out} =
+      Job.get_output_buffer(job, 1)
+      |> IO.inspect()
+
+    File.write!("out2.png", out, [:binary])
 
     Job.destroy(job)
   end

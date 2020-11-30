@@ -29,16 +29,14 @@ defmodule Imageflow.Job do
     job
   end
 
-  def get_output_buffer(%__MODULE__{id: id} = job, io_id) do
-    Native.job_get_output_buffer(id, io_id)
-
-    job
-  end
-
   def save_output_to_file(%__MODULE__{id: id} = job, io_id, path) do
     Native.job_save_output_to_file(id, io_id, path)
 
     job
+  end
+
+  def get_output_buffer(%__MODULE__{id: id} = _job, io_id) do
+    Native.job_get_output_buffer(id, io_id)
   end
 
   def message(%__MODULE__{id: id} = job, method, message) do

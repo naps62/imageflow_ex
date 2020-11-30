@@ -25,18 +25,20 @@ impl Job {
 
     pub fn add_input_buffer(&self, io_id: i32, bytes: &[u8]) {
         let mut ctx = self.inner.lock().unwrap();
+
         ctx.add_copied_input_buffer(io_id, bytes).unwrap();
     }
 
     pub fn add_input_file(&self, io_id: i32, path: &String) {
         let mut ctx = self.inner.lock().unwrap();
+
         ctx.add_file(io_id, IoDirection::In, path.as_str()).unwrap();
     }
 
     pub fn add_output_buffer(&self, io_id: i32) {
         let mut ctx = self.inner.lock().unwrap();
-        ctx.add_output_buffer(io_id);
-        // ctx.add_file(io_id, IoDirection::In, path.as_str()).unwrap();
+
+        ctx.add_output_buffer(io_id).unwrap();
     }
 
     pub fn message(&self, method: &String, message: &String) -> Result<JsonResponse, JsonResponse> {
@@ -48,13 +50,12 @@ impl Job {
         }
     }
 
-    pub fn get_output_buffer(&self, io_id: i32) -> Result<(), FlowError> {
-        let mut ctx = self.inner.lock().unwrap();
+    pub fn get_output_buffer<'a>(&'a self, io_id: i32) -> Result<Vec<u8>, FlowError> {
+        let ctx = self.inner.lock().unwrap();
 
-        let buffer = ctx.get_output_buffer_slice(io_id).unwrap();
+        let buffer = ctx.get_output_buffer_slice(io_id).unwrap().to_vec();
 
-        println!("{:?}", buffer);
-        Ok(())
+        Ok(buffer)
     }
 
     pub fn save_output_to_file(&self, io_id: i32, path: &String) -> std::io::Result<()> {
