@@ -1,9 +1,7 @@
 defmodule Imageflow.Native do
   use Rustler, otp_app: :imageflow, crate: :imageflow_ex
 
-  def add(_x, _y), do: error()
   def get_long_version_string(), do: error()
-
   def job_create, do: error()
   def job_destroy(_id), do: error()
   def job_add_input_buffer(_id, _io_id, _bytes), do: error()
