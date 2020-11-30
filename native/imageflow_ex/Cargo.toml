@@ -12,7 +12,5 @@ crate-type = ["dylib"]
 [dependencies]
 rustler = "0.21.1"
 lazy_static = "1.0"
-# imageflow_core = { git = "https://github.com/imazen/imageflow", tag = "v1.5.3-rc57" }
-# imageflow_types = { git = "https://github.com/imazen/imageflow", tag = "v1.5.3-rc57" }
-imageflow_core = { path = "../../../../contrib/imageflow/imageflow_core" }
-imageflow_types = { path = "../../../../contrib/imageflow/imageflow_types" }
+imageflow_core = { git = "https://github.com/imazen/imageflow", tag = "v1.5.3-rc57" }
+imageflow_types = { git = "https://github.com/imazen/imageflow", tag = "v1.5.3-rc57" }

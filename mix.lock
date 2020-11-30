@@ -1,5 +1,5 @@
 %{
   "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "18a228f5f0058ee183f29f9eae0805c6e59d61c3b006760668d8d18ff0d12179"},
-  "rustler": {:git, "https://github.com/hansihe/rustler.git", "fa221b9292332955ece4d5733e61cf9054efbc23", [sparse: "rustler_mix"]},
+  "rustler": {:hex, :rustler, "0.21.1", "5299980be32da997c54382e945bacaa015ed97a60745e1e639beaf6a7b278c65", [:mix], [{:toml, "~> 0.5.2", [hex: :toml, repo: "hexpm", optional: false]}], "hexpm", "6ee1651e10645b2b2f3bb70502bf180341aa058709177e9bc28c105934094bc6"},
   "toml": {:hex, :toml, "0.5.2", "e471388a8726d1ce51a6b32f864b8228a1eb8edc907a0edf2bb50eab9321b526", [:mix], [], "hexpm", "f1e3dabef71fb510d015fad18c0e05e7c57281001141504c6b69d94e99750a07"},
 }
