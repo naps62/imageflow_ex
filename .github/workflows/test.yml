@@ -23,11 +23,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
       - name: Install dependencies
-        run: |
-          apk upgrade
-          apk add git cargo=1.47.0-r1
+        run: apk add git
 
       - name: Setup Deps Cache
         uses: actions/cache@v1
