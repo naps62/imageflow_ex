@@ -25,7 +25,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: apk add git cargo
+        run: |
+          apk upgrade
+          apk add git cargo
 
       - name: Setup Deps Cache
         uses: actions/cache@v1
