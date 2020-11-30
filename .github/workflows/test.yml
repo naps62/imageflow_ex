@@ -24,6 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install dependencies
+        run: apk add git
+
       - name: Setup Deps Cache
         uses: actions/cache@v1
         with:
