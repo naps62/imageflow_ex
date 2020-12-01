@@ -2,7 +2,7 @@ extern crate imageflow_core;
 
 use std::sync::{Arc, Mutex};
 
-use imageflow_core::{Context, FlowError, JsonResponse};
+use imageflow_core::{Context, FlowError};
 use imageflow_types::IoDirection;
 
 pub struct Job {
@@ -44,12 +44,17 @@ impl Job {
         ctx.add_output_buffer(io_id).unwrap();
     }
 
-    pub fn message(&self, method: &String, message: &String) -> Result<JsonResponse, JsonResponse> {
+    pub fn message(&self, method: &String, message: &String) -> Result<String, String> {
+        use std::str;
+
         let mut ctx = self.inner.lock().unwrap();
 
-        match ctx.message(&method, message.as_bytes()) {
-            (resp, Ok(_)) => Ok(resp),
-            (resp, Err(_)) => Err(resp),
+        let (json, result) = ctx.message(&method, message.as_bytes());
+        let string = str::from_utf8(&json.response_json).unwrap().to_string();
+
+        match result {
+            Ok(_) => Ok(string),
+            Err(_) => Err(string),
         }
     }
 

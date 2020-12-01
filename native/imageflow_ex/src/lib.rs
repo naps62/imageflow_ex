@@ -1,109 +1,106 @@
 extern crate imageflow_types;
 
-use rustler::{Binary, Encoder, Env, Error, Term};
+use rustler::{Atom, Binary, Error, NifResult};
 
 mod job;
 
 mod atoms {
-    rustler::rustler_atoms! {
-        atom ok;
-        atom error;
+    rustler::atoms! {
+        ok,
+        error
     }
 }
 
+use atoms::ok;
 use job::Job;
 
-rustler::rustler_export_nifs! {
+rustler::init!(
     "Elixir.Imageflow.Native",
     [
-        ("get_long_version_string", 0, get_long_version_string),
-        ("job_create", 0, job_create),
-        ("job_destroy", 1, job_destroy),
-        ("job_add_input_buffer", 3, job_add_input_buffer),
-        ("job_add_input_file", 3, job_add_input_file),
-        ("job_add_output_buffer", 2, job_add_output_buffer),
-        ("job_get_output_buffer", 2, job_get_output_buffer),
-        ("job_save_output_to_file", 3, job_save_output_to_file),
-        ("job_message", 3, job_message),
-    ],
-    None
-}
+        get_long_version_string,
+        job_create,
+        job_destroy,
+        job_add_input_buffer,
+        job_add_input_file,
+        job_add_output_buffer,
+        job_get_output_buffer,
+        job_save_output_to_file,
+        job_message,
+    ]
+);
 
 macro_rules! job {
     ($id:expr) => {{
-        Job::load_from_id($id.decode()?).ok().unwrap()
+        Job::load_from_id($id).ok().unwrap()
     }};
 }
 
-fn get_long_version_string<'a>(_env: Env<'a>, _args: &[Term<'a>]) -> String {
+macro_rules! boxed_error {
+    ($error:expr) => {{
+        Error::Term(Box::new($error))
+    }};
+}
+
+#[rustler::nif]
+fn get_long_version_string() -> String {
     imageflow_types::version::one_line_version()
 }
 
-pub fn job_create<'a>(env: Env<'a>, _args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+#[rustler::nif]
+pub fn job_create() -> NifResult<(Atom, usize)> {
     match Job::create() {
-        Ok(id) => Ok((atoms::ok(), id).encode(env)),
-        Err(_e) => Err(rustler::Error::Atom("Unable to create context")),
+        Ok(id) => Ok((ok(), id)),
+        Err(e) => Err(boxed_error!(e.message)),
     }
 }
 
-pub fn job_destroy<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    Job::destroy_from_id(args[0].decode()?).ok().unwrap();
-
-    Ok(atoms::ok().encode(env))
-}
-
-pub fn job_add_input_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-    let bytes: Binary = args[2].decode()?;
-
-    job!(args[0]).add_input_buffer(io_id, bytes.as_slice());
-
-    Ok(atoms::ok().encode(env))
-}
-
-pub fn job_add_input_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-    let path: String = args[2].decode()?;
-
-    match job!(args[0]).add_input_file(io_id, &path) {
-        Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(e) => Ok((atoms::error(), e.message).encode(env)),
+#[rustler::nif]
+pub fn job_destroy(job_id: usize) -> NifResult<Atom> {
+    match Job::destroy_from_id(job_id) {
+        Ok(_) => Ok(ok()),
+        Err(e) => Err(boxed_error!(e)),
     }
 }
 
-pub fn job_add_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
+#[rustler::nif]
+pub fn job_add_input_buffer(job_id: usize, io_id: i32, bytes: Binary) -> NifResult<Atom> {
+    job!(job_id).add_input_buffer(io_id, bytes.as_slice());
 
-    job!(args[0]).add_output_buffer(io_id);
-
-    Ok(atoms::ok().encode(env))
+    Ok(ok())
 }
 
-pub fn job_get_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-
-    match job!(args[0]).get_output_buffer(io_id) {
-        Ok(buffer) => Ok((atoms::ok(), buffer).encode(env)),
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env)),
+#[rustler::nif]
+pub fn job_add_input_file(job_id: usize, io_id: i32, path: String) -> NifResult<Atom> {
+    match job!(job_id).add_input_file(io_id, &path) {
+        Ok(_) => Ok(ok()),
+        Err(e) => Err(boxed_error!(e.message)),
     }
 }
 
-pub fn job_save_output_to_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-    let path: String = args[2].decode()?;
+#[rustler::nif]
+pub fn job_add_output_buffer(job_id: usize, io_id: i32) -> NifResult<Atom> {
+    job!(job_id).add_output_buffer(io_id);
 
-    match job!(args[0]).save_output_to_file(io_id, &path) {
-        Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env)),
+    Ok(ok())
+}
+
+#[rustler::nif]
+pub fn job_get_output_buffer(job_id: usize, io_id: i32) -> NifResult<(Atom, Vec<u8>)> {
+    match job!(job_id).get_output_buffer(io_id) {
+        Ok(buffer) => Ok((ok(), buffer)),
+        Err(e) => Err(boxed_error!(e.to_string())),
     }
 }
 
-pub fn job_message<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let method: String = args[1].decode()?;
-    let message: String = args[2].decode()?;
-
-    match job!(args[0]).message(&method, &message) {
-        Ok(resp) => Ok((atoms::ok(), resp.response_json.encode(env)).encode(env)),
-        Err(resp) => Ok((atoms::error(), resp.response_json.encode(env).encode(env)).encode(env)),
+#[rustler::nif]
+pub fn job_save_output_to_file(job_id: usize, io_id: i32, path: String) -> NifResult<Atom> {
+    match job!(job_id).save_output_to_file(io_id, &path) {
+        Ok(_) => Ok(ok()),
+        Err(e) => Err(boxed_error!(e.to_string())),
     }
+}
+
+#[rustler::nif]
+pub fn job_message(job_id: usize, method: String, message: String) -> Result<String, String> {
+    job!(job_id).message(&method, &message)
 }
