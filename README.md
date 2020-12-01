@@ -81,7 +81,7 @@ task = %{ ... }
 
 Imageflow accepts JSON task definitions. Since this package is only a binding to
 imageflow, the most reliable documentation on the JSON api available is from the
-[here, in the crate docs][imageflow-json-docs]
+[here, in the crate docs][imageflow-json-docs].
 
 
 Here's a simple example, which defines a task that takes buffer `0` as input,
@@ -124,7 +124,7 @@ As you can probably guess from the API so far, imageflow isn't constrained to
 a single input/output per job.
 A common use case for web development would be to generate multiple sizes of an
 image for a responsive frontend.
-More details on details can be found in the [imageflow repo][imageflow-github]
+More details can be found in the [imageflow repo][imageflow-github].
 
 ## Contributing
 
