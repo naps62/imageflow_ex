@@ -64,7 +64,7 @@ alias Imageflow.Job
 :ok = Job.add_input_file(job, 0, "input.jpg")
 
 # allocate an output buffer before manipulating the image
-:ok = Job.add_output_buffer(job, 2)
+:ok = Job.add_output_buffer(job, 1)
 
 
 # define a JSON task to transform your image (more details below)
