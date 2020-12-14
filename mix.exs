@@ -11,6 +11,7 @@ defmodule Imageflow.MixProject do
       start_permanent: Mix.env() == :prod,
       rustler_crates: rustler_crates(),
       deps: deps(),
+      compilers: [:rustler] ++ Mix.compilers(),
       description: description(),
       package: package(),
       docs: docs()
