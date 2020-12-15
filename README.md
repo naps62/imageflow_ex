@@ -1,5 +1,8 @@
 # ImageflowEx
 
+[![Github Actions Status](https://github.com/naps62/imageflow_ex/workflows/Test%20Suite/badge.svg)](https://github.com/naps62/imageflow_ex/actions)
+[![Hex pm](http://img.shields.io/hexpm/v/imageflow.svg?style=flat)](https://hex.pm/packages/imageflow)
+
 [imageflow-github]: https://github.com/imazen/imageflow
 [imageflow-json-docs]: https://docs.imageflow.io/json/introduction.html
 [my-website]: https://naps62.com
