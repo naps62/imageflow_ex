@@ -51,7 +51,8 @@ defmodule Imageflow.MixProject do
       maintainers: ["Miguel Palhas"],
       licenses: ["ISC"],
       links: %{"GitHub" => "https://github.com/naps62/imageflow_ex"},
-      files: ~w(.formatter.exs mix.exs README.md lib native LICENSE)
+      files:
+        ~w(.formatter.exs mix.exs README.md lib native/imageflow_ex/src native/imageflow_ex/Cargo.toml native/imageflow_ex/Cargo.lock LICENSE)
     ]
   end
 
