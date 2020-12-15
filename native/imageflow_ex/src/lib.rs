@@ -56,9 +56,10 @@ pub fn job_add_input_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<
     let io_id: i32 = args[1].decode()?;
     let bytes: Binary = args[2].decode()?;
 
-    job!(args[0]).add_input_buffer(io_id, bytes.as_slice());
-
-    Ok(atoms::ok().encode(env))
+    match job!(args[0]).add_input_buffer(io_id, bytes.as_slice()) {
+        Ok(_) => Ok(atoms::ok().encode(env)),
+        Err(msg) => Ok((atoms::error(), msg).encode(env)),
+    }
 }
 
 pub fn job_add_input_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
@@ -67,16 +68,17 @@ pub fn job_add_input_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a
 
     match job!(args[0]).add_input_file(io_id, &path) {
         Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(e) => Ok((atoms::error(), e.message).encode(env)),
+        Err(msg) => Ok((atoms::error(), msg).encode(env)),
     }
 }
 
 pub fn job_add_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let io_id: i32 = args[1].decode()?;
 
-    job!(args[0]).add_output_buffer(io_id);
-
-    Ok(atoms::ok().encode(env))
+    match job!(args[0]).add_output_buffer(io_id) {
+        Ok(_) => Ok(atoms::ok().encode(env)),
+        Err(msg) => Ok((atoms::error(), msg).encode(env)),
+    }
 }
 
 pub fn job_get_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
@@ -104,6 +106,6 @@ pub fn job_message<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Erro
 
     match job!(args[0]).message(&method, &message) {
         Ok(resp) => Ok((atoms::ok(), resp.response_json.encode(env)).encode(env)),
-        Err(resp) => Ok((atoms::error(), resp.response_json.encode(env).encode(env)).encode(env)),
+        Err(msg) => Ok((atoms::error(), msg.encode(env)).encode(env)),
     }
 }
