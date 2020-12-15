@@ -26,7 +26,7 @@ end
 There are two main ways of using `imageflow_ex`:
 
 * [`Imageflow.Graph`](https://hexdocs.pm/imageflow/Imageflow.Graph.html), which is the high-level graph-like API, inspired by [Imageflow.NET](https://github.com/imazen/imageflow-dotnet)
-* [`Imageflow.Native`](https://hexdocs.pm/imageflow/Imageflow.Native.html) which provibes lower-level access to Rust binding. Shouldn't be needed unless you need really specific features which aren't yet implemented in the Graph API (but please open an issue so the API can evolve).
+* [`Imageflow.Native`](https://hexdocs.pm/imageflow/Imageflow.Native.html) which provides lower-level access to Rust binding. Shouldn't be needed unless you need really specific features which aren't yet implemented in the Graph API (but please open an issue so the API can evolve).
 
 Using the Graph API allows you to create processing pipelines to process your
 images:
