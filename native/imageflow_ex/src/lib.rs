@@ -14,7 +14,7 @@ mod atoms {
 use job::Job;
 
 rustler::rustler_export_nifs! {
-    "Elixir.Imageflow.Native",
+    "Elixir.Imageflow.NIF",
     [
         ("get_long_version_string", 0, get_long_version_string),
         ("job_create", 0, job_create),

@@ -1,29 +1,29 @@
-defmodule Imageflow.JobTest do
+defmodule Imageflow.NativeTest do
   use ExUnit.Case
 
-  alias Imageflow.Job
+  alias Imageflow.Native
 
   describe "create/0" do
     test "creates a job" do
-      job = Job.create()
+      job = Native.create()
 
-      assert {:ok, %Job{}} = job
+      assert {:ok, %Native{}} = job
     end
   end
 
   describe "create!/0" do
     test "creates a job" do
-      job = Job.create!()
+      job = Native.create!()
 
-      assert %Job{} = job
+      assert %Native{} = job
     end
   end
 
   describe "destroy/1" do
     test "can destroy existing jobs" do
-      job = Job.create!()
+      job = Native.create!()
 
-      assert :ok = Job.destroy(job)
+      assert :ok = Native.destroy(job)
     end
   end
 
@@ -35,20 +35,20 @@ defmodule Imageflow.JobTest do
            0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82>>
 
     test "allows input bytes to be added and image width queried" do
-      job = Job.create!()
+      job = Native.create!()
 
-      assert :ok = Job.add_input_buffer(job, 0, @img)
-      assert {:ok, resp} = Job.message(job, "v0.1/get_image_info", %{io_id: 0})
+      assert :ok = Native.add_input_buffer(job, 0, @img)
+      assert {:ok, resp} = Native.message(job, "v0.1/get_image_info", %{io_id: 0})
       assert get_in(resp, ["success"]) == true
       assert get_in(resp, ["code"]) == 200
       assert get_in(resp, ["data", "image_info", "image_width"]) == 1
     end
 
     test "allows image to be upscaled" do
-      job = Job.create!()
+      job = Native.create!()
 
-      assert :ok = Job.add_input_buffer(job, 0, @img)
-      assert :ok = Job.add_output_buffer(job, 1)
+      assert :ok = Native.add_input_buffer(job, 0, @img)
+      assert :ok = Native.add_output_buffer(job, 1)
 
       task = %{
         "framewise" => %{
@@ -65,7 +65,7 @@ defmodule Imageflow.JobTest do
         }
       }
 
-      assert {:ok, resp} = Job.message(job, "v0.1/execute", task)
+      assert {:ok, resp} = Native.message(job, "v0.1/execute", task)
 
       assert %{
                "success" => true,
@@ -79,7 +79,7 @@ defmodule Imageflow.JobTest do
                }
              } = resp
 
-      assert {:ok, bytes} = Job.get_output_buffer(job, 1)
+      assert {:ok, bytes} = Native.get_output_buffer(job, 1)
       assert [0xFF, 0xD8, 0xFF | _] = bytes
     end
   end
@@ -88,10 +88,10 @@ defmodule Imageflow.JobTest do
     @img_path "test/fixtures/elixir-logo.jpg"
 
     test "allows input file to be added and image size queried" do
-      job = Job.create!()
+      job = Native.create!()
 
-      :ok = Job.add_input_file(job, 0, @img_path)
-      {:ok, resp} = Job.message(job, "v0.1/get_image_info", %{io_id: 0})
+      :ok = Native.add_input_file(job, 0, @img_path)
+      {:ok, resp} = Native.message(job, "v0.1/get_image_info", %{io_id: 0})
 
       assert get_in(resp, ["success"]) == true
       assert get_in(resp, ["code"]) == 200
@@ -100,10 +100,10 @@ defmodule Imageflow.JobTest do
     end
 
     test "allows image file to be downscaled and save to new file" do
-      job = Job.create!()
+      job = Native.create!()
 
-      :ok = Job.add_input_file(job, 0, @img_path)
-      :ok = Job.add_output_buffer(job, 1)
+      :ok = Native.add_input_file(job, 0, @img_path)
+      :ok = Native.add_output_buffer(job, 1)
 
       task = %{
         "framewise" => %{
@@ -131,12 +131,12 @@ defmodule Imageflow.JobTest do
         }
       }
 
-      {:ok, %{"success" => true}} = Job.message(job, "v0.1/execute", task)
-      :ok = Job.save_output_to_file(job, 1, "/tmp/output.png")
+      {:ok, %{"success" => true}} = Native.message(job, "v0.1/execute", task)
+      :ok = Native.save_output_to_file(job, 1, "/tmp/output.png")
 
-      job2 = Job.create!()
-      :ok = Job.add_input_file(job2, 0, "/tmp/output.png")
-      {:ok, resp} = Job.message(job2, "v0.1/get_image_info", %{io_id: 0})
+      job = Native.create!()
+      :ok = Native.add_input_file(job, 0, "/tmp/output.png")
+      {:ok, resp} = Native.message(job, "v0.1/get_image_info", %{io_id: 0})
 
       assert get_in(resp, ["data", "image_info", "image_width"]) == 50
     end
