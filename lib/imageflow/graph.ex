@@ -27,6 +27,7 @@ defmodule Imageflow.Graph do
       |> Graph.decode_file(@input_path)
       |> Graph.branch(fn graph ->
         # 2160px wide image for retina displays graph
+        graph
         |> Graph.constrain(2160, nil)
         |> Graph.encode_to_file("desktop@2x.png")
       end)
