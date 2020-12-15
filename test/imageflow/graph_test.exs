@@ -29,6 +29,66 @@ defmodule Imageflow.GraphTest do
 
       assert %{io_count: 1, outputs: %{1 => {:file, "file.png"}}} = graph
     end
+
+    test "appends a file encoding operation" do
+      graph = Graph.new() |> Graph.encode_to_file("file.png")
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1}}}} = graph
+    end
+
+    test "allows appending jpg outputs" do
+      graph = Graph.new() |> Graph.encode_to_file("file.jpg", :jpg)
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: %{mozjpeg: %{quality: 90}}}}}} = graph
+    end
+
+    test "allows appending jpg outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_file("file.jpg", :jpg, %{quality: 10})
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: %{mozjpeg: %{quality: 10}}}}}} = graph
+    end
+
+    test "allows appending png outputs" do
+      graph = Graph.new() |> Graph.encode_to_file("file.jpg", :png)
+
+      assert %{
+               nodes: %{
+                 1 => %{encode: %{io_id: 1, preset: %{lodepng: %{maximum_deflate: false}}}}
+               }
+             } = graph
+    end
+
+    test "allows appending png outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_file("file.jpg", :png, %{maximum_deflate: true})
+
+      assert %{
+               nodes: %{1 => %{encode: %{io_id: 1, preset: %{lodepng: %{maximum_deflate: true}}}}}
+             } = graph
+    end
+
+    test "allows appending gif outputs" do
+      graph = Graph.new() |> Graph.encode_to_file("file.gif", :gif)
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :gif}}}} = graph
+    end
+
+    test "allows appending gif outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_file("file.jpg", :gif, %{a: :b})
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :gif}}}} = graph
+    end
+
+    test "allows appending webp outputs" do
+      graph = Graph.new() |> Graph.encode_to_file("file.webp", :webp)
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :webplossless}}}} = graph
+    end
+
+    test "allows appending webp outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_file("file.webp", :webp, %{a: :b})
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :webplossless}}}} = graph
+    end
   end
 
   describe "constrain/4" do

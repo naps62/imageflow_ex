@@ -92,15 +92,31 @@ defmodule Imageflow.Graph do
   @doc """
   Specifies a destination file for the current branch of the pipeline
 
-  No further processing operations should be appended at the current branch after this call
+  No further processing operations should be appended at the current branch after this call.
+
+  The last two arguments specify the encoder and optional encoding parameters.
+
+  The following parameters are valid encoders:
+  * `:jpg`: Alias to `:mozjpeg`
+  * `:jpeg`: Alias to `:mozjpeg`
+  * `:png`: Alias to `:lodepng`
+  * `:webp: Alias to `:webplossless
+  * `:mozjpeg`
+  * `:gif`
+  * `:lodepng`: Lossless PNG
+  * `:pngquant`: Lossy PNG
+  * `:webplossy`: Lossy WebP
+  * `:webplossless`: Lossless WebP
+
+  Check the official [encoding documentation](https://docs.imageflow.io/json/encode.html) to see the parameters available to each encoder
   """
-  @spec encode_to_file(t, binary) :: t
-  def encode_to_file(%{io_count: io_count} = graph, path) do
+  @spec encode_to_file(t, binary, binary | atom, map) :: t
+  def encode_to_file(%{io_count: io_count} = graph, path, encoder \\ :png, opts \\ %{}) do
     io_id = io_count + 1
 
     graph
     |> add_output(io_id, {:file, path})
-    |> append_node(%{encode: %{io_id: io_id, preset: %{libjpegturbo: %{quality: 90}}}})
+    |> append_node(%{encode: %{io_id: io_id, preset: preset_for(encoder, opts)}})
   end
 
   @doc """
@@ -301,5 +317,33 @@ defmodule Imageflow.Graph do
 
   defp add_output(%{io_count: io_count, outputs: outputs} = graph, io_id, value) do
     %{graph | io_count: io_count + 1, outputs: Map.put(outputs, io_id, value)}
+  end
+
+  defp preset_for(encoder, opts) do
+    encoder
+    |> to_string()
+    |> case do
+      jpeg when jpeg in ~w(jpeg jpg mozjpeg) ->
+        {:mozjpeg, %{quality: 90, progressive: false}}
+
+      png when png in ~w(png lodepng) ->
+        {:lodepng, %{maximum_deflate: false}}
+
+      "gif" ->
+        :gif
+
+      "webp" ->
+        :webplossless
+
+      "lossy_png" ->
+        {:pngquant, %{quality: 90, minimum_quality: 20, speed: nil, maximum_deflate: nil}}
+
+      "lossy_webp" ->
+        {:webplossy, %{quality: 80}}
+    end
+    |> case do
+      {encoder, defaults} -> %{encoder => Map.merge(defaults, opts)}
+      encoder when is_atom(encoder) -> encoder
+    end
   end
 end

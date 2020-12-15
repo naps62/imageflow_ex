@@ -16,7 +16,7 @@ Add the package to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:imageflow_ex, "~> 0.2.0"}
+    {:imageflow_ex, "~> 0.3.0"}
   ]
 end
 ```
@@ -61,5 +61,5 @@ features. PRs will be reviewed and subject to our style guide and linters.
 
 # About
 
-This project was developed by [Miguel Palhas][https://naps62.com], and is published
+This project was developed by [Miguel Palhas](https://naps62.com), and is published
 under the ISC license.
