@@ -1,7 +1,7 @@
 defmodule Imageflow.MixProject do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
 
   def project do
     [
@@ -49,7 +49,7 @@ defmodule Imageflow.MixProject do
   defp package do
     [
       maintainers: ["Miguel Palhas"],
-      licenses: ["ISC"],
+      licenses: ["AGPL"],
       links: %{"GitHub" => "https://github.com/naps62/imageflow_ex"},
       files:
         ~w(.formatter.exs mix.exs README.md lib native/imageflow_ex/src native/imageflow_ex/Cargo.toml native/imageflow_ex/Cargo.lock LICENSE)
