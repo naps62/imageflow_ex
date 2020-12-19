@@ -16,7 +16,7 @@ Add the package to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:imageflow, "~> 0.4.0"}
+    {:imageflow, "~> 0.4.1"}
   ]
 end
 ```

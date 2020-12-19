@@ -145,7 +145,7 @@ defmodule Imageflow.Graph do
   operation](https://docs.imageflow.io/json/constrain.html) for more info on
   all options available
   """
-  @spec constrain(t, number, number, map) :: t
+  @spec constrain(t, number | nil, number | nil, map) :: t
   def constrain(graph, w, h, opts \\ %{}) do
     graph
     |> append_node(%{constrain: %{mode: "within", w: w, h: h} |> Map.merge(opts)})
