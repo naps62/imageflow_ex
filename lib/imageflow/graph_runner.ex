@@ -48,7 +48,8 @@ defmodule Imageflow.GraphRunner do
       {id, value}, :ok ->
         case value do
           {:file, path} -> Native.save_output_to_file(job, id, path)
-          :bytes -> :ok # skip
+          # skip
+          :bytes -> :ok
         end
         |> case do
           :ok -> {:cont, :ok}
@@ -59,10 +60,11 @@ defmodule Imageflow.GraphRunner do
 
   def print_results(job, outputs) do
     outputs
-    |> Enum.reduce_while({:ok, []}, fn ({id, value}, {:ok, acc}) ->
+    |> Enum.reduce_while({:ok, []}, fn {id, value}, {:ok, acc} ->
       case value do
         :bytes -> Native.get_output_buffer(job, id)
-        {:file, _} -> :skip # skip
+        # skip
+        {:file, _} -> :skip
       end
       |> case do
         :skip -> {:cont, {:ok, acc}}

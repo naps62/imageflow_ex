@@ -102,7 +102,6 @@ defmodule Imageflow.Graph do
     |> append_node(%{decode: %{io_id: io_id}})
   end
 
-
   @doc """
   Specifies a destination file for the current branch of the pipeline
 
