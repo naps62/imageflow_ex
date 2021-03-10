@@ -19,7 +19,7 @@ defmodule Imageflow.Native do
       {:ok, resp} = Native.message("v0.1/get_image_info", %{io_id: 0})
   """
 
-  alias Imageflow.NIF
+  alias Imageflow.{Graph, NIF}
 
   @type t :: %__MODULE__{}
   @type native_ret_t :: :ok | {:error, binary}
@@ -62,12 +62,12 @@ defmodule Imageflow.Native do
     NIF.job_save_output_to_file(id, io_id, path)
   end
 
-  @spec get_output_buffer(t, number) :: {:ok, binary} | {:error, binary}
+  @spec get_output_buffer(t, number) :: {:ok, iolist} | {:error, binary}
   def get_output_buffer(%__MODULE__{id: id} = _job, io_id) do
     NIF.job_get_output_buffer(id, io_id)
   end
 
-  @spec message(t, binary, binary) :: {:ok, any} | {:error, binary}
+  @spec message(t, binary, Graph.t()) :: {:ok, any} | {:error, binary}
   def message(%__MODULE__{id: id}, method, message) do
     with {:ok, resp} <- NIF.job_message(id, method, Jason.encode!(message)) do
       {:ok, Jason.decode!(resp)}

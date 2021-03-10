@@ -124,12 +124,8 @@ defmodule Imageflow.Graph do
   Check the official [encoding documentation](https://docs.imageflow.io/json/encode.html) to see the parameters available to each encoder
   """
   @spec encode_to_file(t, binary, binary | atom, map) :: t
-  def encode_to_file(%{io_count: io_count} = graph, path, encoder \\ :png, opts \\ %{}) do
-    io_id = io_count + 1
-
-    graph
-    |> add_output(io_id, {:file, path})
-    |> append_node(%{encode: %{io_id: io_id, preset: preset_for(encoder, opts)}})
+  def encode_to_file(graph, path, encoder \\ :png, opts \\ %{}) do
+    add_encode_node(graph, {:file, path}, encoder, opts)
   end
 
   @doc """
@@ -155,11 +151,15 @@ defmodule Imageflow.Graph do
   """
 
   @spec encode_to_string(t, binary | atom, map) :: t
-  def encode_to_string(%{io_count: io_count} = graph, encoder \\ :png, opts \\ %{}) do
+  def encode_to_string(graph, encoder \\ :png, opts \\ %{}) do
+    add_encode_node(graph, :bytes, encoder, opts)
+  end
+
+  defp add_encode_node(%{io_count: io_count} = graph, output_type, encoder, opts) do
     io_id = io_count + 1
 
     graph
-    |> add_output(io_id, :bytes)
+    |> add_output(io_id, output_type)
     |> append_node(%{encode: %{io_id: io_id, preset: preset_for(encoder, opts)}})
   end
 

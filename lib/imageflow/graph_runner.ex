@@ -1,14 +1,36 @@
 defmodule Imageflow.GraphRunner do
-  alias Imageflow.{Graph, Native}
+  alias Imageflow.{Graph, Native, Result}
 
   def run(%Graph{} = graph) do
     with {:ok, job} <- Native.create(),
          :ok <- add_inputs(job, graph.inputs),
          :ok <- add_outputs(job, graph.outputs),
          :ok <- send_task(job, graph),
-         :ok <- save_outputs(job, graph.outputs),
-         {:ok, results} <- print_results(job, graph.outputs) do
-      if results == [], do: :ok, else: {:ok, results}
+         :ok <- save_outputs(job, graph.outputs) do
+      {:ok, job}
+    end
+  end
+
+  def get_results(job, %Graph{outputs: outputs} = graph) do
+    outputs
+    |> Enum.reduce_while({:ok, []}, fn {id, value}, {:ok, _acc} ->
+      case value do
+        :bytes ->
+          case Native.get_output_buffer(job, id) do
+            {:ok, results} -> {:cont, {:ok, :binary.list_to_bin(results)}}
+            {:error, _} = error -> {:halt, error}
+          end
+
+        {:file, path} ->
+          {:cont, {:ok, path}}
+      end
+    end)
+    |> case do
+      {:ok, results} ->
+        {:ok, %Result{job: job, graph: graph, output: results}}
+
+      error ->
+        error
     end
   end
 
@@ -55,22 +77,6 @@ defmodule Imageflow.GraphRunner do
           :ok -> {:cont, :ok}
           {:error, _} = error -> {:halt, error}
         end
-    end)
-  end
-
-  def print_results(job, outputs) do
-    outputs
-    |> Enum.reduce_while({:ok, []}, fn {id, value}, {:ok, acc} ->
-      case value do
-        :bytes -> Native.get_output_buffer(job, id)
-        # skip
-        {:file, _} -> :skip
-      end
-      |> case do
-        :skip -> {:cont, {:ok, acc}}
-        {:ok, results} -> {:cont, {:ok, :binary.list_to_bin(results)}}
-        {:error, _} = error -> {:halt, error}
-      end
     end)
   end
 
