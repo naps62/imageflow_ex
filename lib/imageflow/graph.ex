@@ -355,6 +355,8 @@ defmodule Imageflow.Graph do
     GraphRunner.run(graph)
   end
 
+  def get_results(job, graph), do: GraphRunner.get_results(job, graph)
+
   defp add_input(%{io_count: io_count, inputs: inputs} = graph, io_id, value) do
     %{graph | io_count: io_count + 1, inputs: Map.put(inputs, io_id, value)}
   end

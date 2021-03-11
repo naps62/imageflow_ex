@@ -7,7 +7,7 @@ defmodule Imageflow.GraphRunner do
          :ok <- add_outputs(job, graph.outputs),
          :ok <- send_task(job, graph),
          :ok <- save_outputs(job, graph.outputs) do
-      {:ok, job}
+      {:ok, job, graph}
     end
   end
 
@@ -52,13 +52,10 @@ defmodule Imageflow.GraphRunner do
   defp add_outputs(job, inputs) do
     inputs
     |> Enum.reduce_while(:ok, fn
-      {id, value}, :ok ->
-        case value do
-          {:file, _path} -> Native.add_output_buffer(job, id)
-          :bytes -> Native.add_output_buffer(job, id)
-        end
-        |> case do
-          :ok -> {:cont, :ok}
+      {id, _}, :ok ->
+        with :ok <- Native.add_output_buffer(job, id) do
+          {:cont, :ok}
+        else
           {:error, _} = error -> {:halt, error}
         end
     end)

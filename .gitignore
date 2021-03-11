@@ -23,3 +23,4 @@ erl_crash.dump
 imageflow_ex-*.tar
 
 native/imageflow_ex/target/
+priv/
