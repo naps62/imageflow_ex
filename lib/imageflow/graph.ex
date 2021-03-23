@@ -91,6 +91,18 @@ defmodule Imageflow.Graph do
   end
 
   @doc """
+  Appends a string to be decoded
+  """
+  @spec decode_string(t, binary) :: t
+  def decode_string(%{io_count: io_count} = graph, string) do
+    io_id = io_count + 1
+
+    graph
+    |> add_input(io_id, {:bytes, string})
+    |> append_node(%{decode: %{io_id: io_id}})
+  end
+
+  @doc """
   Specifies a destination file for the current branch of the pipeline
 
   No further processing operations should be appended at the current branch after this call.
@@ -112,11 +124,42 @@ defmodule Imageflow.Graph do
   Check the official [encoding documentation](https://docs.imageflow.io/json/encode.html) to see the parameters available to each encoder
   """
   @spec encode_to_file(t, binary, binary | atom, map) :: t
-  def encode_to_file(%{io_count: io_count} = graph, path, encoder \\ :png, opts \\ %{}) do
+  def encode_to_file(graph, path, encoder \\ :png, opts \\ %{}) do
+    add_encode_node(graph, {:file, path}, encoder, opts)
+  end
+
+  @doc """
+  Returns the converted image as a string.
+
+  No further processing operations should be appended at the current branch after this call.
+
+  The last two arguments specify the encoder and optional encoding parameters.
+
+  The following parameters are valid encoders:
+  * `:jpg`: Alias to `:mozjpeg`
+  * `:jpeg`: Alias to `:mozjpeg`
+  * `:png`: Alias to `:lodepng`
+  * `:webp: Alias to `:webplossless
+  * `:mozjpeg`
+  * `:gif`
+  * `:lodepng`: Lossless PNG
+  * `:pngquant`: Lossy PNG
+  * `:webplossy`: Lossy WebP
+  * `:webplossless`: Lossless WebP
+
+  Check the official [encoding documentation](https://docs.imageflow.io/json/encode.html) to see the parameters available to each encoder
+  """
+
+  @spec encode_to_string(t, binary | atom, map) :: t
+  def encode_to_string(graph, encoder \\ :png, opts \\ %{}) do
+    add_encode_node(graph, :bytes, encoder, opts)
+  end
+
+  defp add_encode_node(%{io_count: io_count} = graph, output_type, encoder, opts) do
     io_id = io_count + 1
 
     graph
-    |> add_output(io_id, {:file, path})
+    |> add_output(io_id, output_type)
     |> append_node(%{encode: %{io_id: io_id, preset: preset_for(encoder, opts)}})
   end
 
@@ -311,6 +354,8 @@ defmodule Imageflow.Graph do
   def run(graph) do
     GraphRunner.run(graph)
   end
+
+  def get_results(job, graph), do: GraphRunner.get_results(job, graph)
 
   defp add_input(%{io_count: io_count, inputs: inputs} = graph, io_id, value) do
     %{graph | io_count: io_count + 1, inputs: Map.put(inputs, io_id, value)}

@@ -9,7 +9,7 @@ defmodule Imageflow.GraphTest do
     end
   end
 
-  describe "decode_file/1" do
+  describe "decode_file/2" do
     test "appends a new input" do
       graph = Graph.new() |> Graph.decode_file("file.png")
 
@@ -23,7 +23,23 @@ defmodule Imageflow.GraphTest do
     end
   end
 
-  describe "encode_file/1" do
+  describe "decode_string/2" do
+    test "appends a new input" do
+      {:ok, string} = File.read("test/fixtures/elixir-logo.jpg")
+      graph = Graph.new() |> Graph.decode_string(string)
+
+      assert %{io_count: 1, inputs: %{1 => {:bytes, _string}}} = graph
+    end
+
+    test "appends a file decoding operation" do
+      {:ok, string} = File.read("test/fixtures/elixir-logo.jpg")
+      graph = Graph.new() |> Graph.decode_string(string)
+
+      assert %{nodes: %{1 => %{decode: %{io_id: 1}}}} = graph
+    end
+  end
+
+  describe "encode_to_file/2" do
     test "appends a new output" do
       graph = Graph.new() |> Graph.encode_to_file("file.png")
 
@@ -86,6 +102,74 @@ defmodule Imageflow.GraphTest do
 
     test "allows appending webp outputs with custom parameters" do
       graph = Graph.new() |> Graph.encode_to_file("file.webp", :webp, %{a: :b})
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :webplossless}}}} = graph
+    end
+  end
+
+  describe "encode_to_string/2" do
+    test "appends a new output" do
+      graph = Graph.new() |> Graph.encode_to_string()
+
+      assert %{io_count: 1, outputs: %{1 => :bytes}} = graph
+    end
+
+    test "appends a file encoding operation" do
+      graph = Graph.new() |> Graph.encode_to_string()
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1}}}} = graph
+    end
+
+    test "allows appending jpg outputs" do
+      graph = Graph.new() |> Graph.encode_to_string(:jpg)
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: %{mozjpeg: %{quality: 90}}}}}} = graph
+    end
+
+    test "allows appending jpg outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_string(:jpg, %{quality: 10})
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: %{mozjpeg: %{quality: 10}}}}}} = graph
+    end
+
+    test "allows appending png outputs" do
+      graph = Graph.new() |> Graph.encode_to_string(:png)
+
+      assert %{
+               nodes: %{
+                 1 => %{encode: %{io_id: 1, preset: %{lodepng: %{maximum_deflate: false}}}}
+               }
+             } = graph
+    end
+
+    test "allows appending png outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_string(:png, %{maximum_deflate: true})
+
+      assert %{
+               nodes: %{1 => %{encode: %{io_id: 1, preset: %{lodepng: %{maximum_deflate: true}}}}}
+             } = graph
+    end
+
+    test "allows appending gif outputs" do
+      graph = Graph.new() |> Graph.encode_to_string(:gif)
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :gif}}}} = graph
+    end
+
+    test "allows appending gif outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_string(:gif, %{a: :b})
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :gif}}}} = graph
+    end
+
+    test "allows appending webp outputs" do
+      graph = Graph.new() |> Graph.encode_to_string(:webp)
+
+      assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :webplossless}}}} = graph
+    end
+
+    test "allows appending webp outputs with custom parameters" do
+      graph = Graph.new() |> Graph.encode_to_string(:webp, %{a: :b})
 
       assert %{nodes: %{1 => %{encode: %{io_id: 1, preset: :webplossless}}}} = graph
     end
