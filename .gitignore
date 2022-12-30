@@ -22,4 +22,11 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 imageflow_ex-*.tar
 
+# native build path
 native/imageflow_ex/target/
+
+# compiled native module
+priv/native/
+
+# direnv
+.envrc
