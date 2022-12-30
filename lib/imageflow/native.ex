@@ -35,9 +35,10 @@ defmodule Imageflow.Native do
 
   @spec create! :: t
   def create! do
-    {:ok, job} = __MODULE__.create()
-
-    job
+    case create() do
+      {:ok, job} -> job
+      {:error, reason} -> raise RuntimeError, reason
+    end
   end
 
   def destroy(%__MODULE__{id: id}), do: NIF.job_destroy(id)

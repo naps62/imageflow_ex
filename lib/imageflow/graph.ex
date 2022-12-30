@@ -91,6 +91,18 @@ defmodule Imageflow.Graph do
   end
 
   @doc """
+  Appends a new input buffer to be decoded
+  """
+  @spec decode_buffer(t, binary) :: t
+  def decode_buffer(%{io_count: io_count} = graph, bytes) do
+    io_id = io_count + 1
+
+    graph
+    |> add_input(io_id, {:buffer, bytes})
+    |> append_node(%{decode: %{io_id: io_id}})
+  end
+
+  @doc """
   Specifies a destination file for the current branch of the pipeline
 
   No further processing operations should be appended at the current branch after this call.
@@ -117,6 +129,36 @@ defmodule Imageflow.Graph do
 
     graph
     |> add_output(io_id, {:file, path})
+    |> append_node(%{encode: %{io_id: io_id, preset: preset_for(encoder, opts)}})
+  end
+
+  @doc """
+  Specifies a destination buffer for the current branch of the pipeline
+
+  No further processing operations should be appended at the current branch after this call.
+
+  The last two arguments specify the encoder and optional encoding parameters.
+
+  The following parameters are valid encoders:
+  * `:jpg`: Alias to `:mozjpeg`
+  * `:jpeg`: Alias to `:mozjpeg`
+  * `:png`: Alias to `:lodepng`
+  * `:webp: Alias to `:webplossless
+  * `:mozjpeg`
+  * `:gif`
+  * `:lodepng`: Lossless PNG
+  * `:pngquant`: Lossy PNG
+  * `:webplossy`: Lossy WebP
+  * `:webplossless`: Lossless WebP
+
+  Check the official [encoding documentation](https://docs.imageflow.io/json/encode.html) to see the parameters available to each encoder
+  """
+  @spec encode_to_buffer(t, binary | atom, map) :: t
+  def encode_to_buffer(%{io_count: io_count} = graph, encoder \\ :png, opts \\ %{}) do
+    io_id = io_count + 1
+
+    graph
+    |> add_output(io_id, :buffer)
     |> append_node(%{encode: %{io_id: io_id, preset: preset_for(encoder, opts)}})
   end
 

@@ -17,10 +17,15 @@ defmodule Imageflow.GraphRunner do
     |> Enum.reduce_while(:ok, fn
       {id, value}, :ok ->
         case value do
-          {:file, path} -> Native.add_input_file(job, id, path)
+          {:file, path} ->
+            Native.add_input_file(job, id, path)
+
+          {:buffer, bytes} ->
+            Native.add_input_buffer(job, id, bytes)
         end
         |> case do
           :ok -> {:cont, :ok}
+          {:ok, _} -> {:cont, :ok}
           {:error, _} = error -> {:halt, error}
         end
     end)
@@ -30,7 +35,7 @@ defmodule Imageflow.GraphRunner do
     inputs
     |> Enum.reduce_while(:ok, fn
       {id, _}, :ok ->
-        with :ok <- Native.add_output_buffer(job, id) do
+        with {:ok, :ok} <- Native.add_output_buffer(job, id) do
           {:cont, :ok}
         else
           {:error, _} = error -> {:halt, error}
@@ -44,9 +49,11 @@ defmodule Imageflow.GraphRunner do
       {id, value}, :ok ->
         case value do
           {:file, path} -> Native.save_output_to_file(job, id, path)
+          :buffer -> Native.get_output_buffer(job, id)
         end
         |> case do
           :ok -> {:cont, :ok}
+          {:ok, data} -> {:cont, {:ok, data}}
           {:error, _} = error -> {:halt, error}
         end
     end)
