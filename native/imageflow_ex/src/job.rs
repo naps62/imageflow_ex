@@ -66,11 +66,11 @@ impl Job {
         handle_result!(ctx, result)
     }
 
-    pub fn add_input_file(&self, io_id: i32, path: &String) -> Result<(), String> {
+    pub fn add_input_file(&self, io_id: i32, path: &str) -> Result<(), String> {
         let mut ctx = context_ready!(self);
 
         let result = catch_unwind(AssertUnwindSafe(|| {
-            ctx.add_file(io_id, IoDirection::In, path.as_str())
+            ctx.add_file(io_id, IoDirection::In, path)
         }));
 
         handle_result!(ctx, result)
@@ -84,11 +84,11 @@ impl Job {
         handle_result!(ctx, result)
     }
 
-    pub fn message(&self, method: &String, message: &String) -> Result<JsonResponse, String> {
+    pub fn message(&self, method: &str, message: &str) -> Result<JsonResponse, String> {
         let mut ctx = self.inner.lock().unwrap();
 
         let result = catch_unwind(AssertUnwindSafe(|| {
-            match ctx.message(&method, message.as_bytes()) {
+            match ctx.message(method, message.as_bytes()) {
                 (resp, Ok(_)) => Ok(resp),
                 (_, Err(error)) => Err(error),
             }
@@ -97,7 +97,7 @@ impl Job {
         handle_result!(ctx, result)
     }
 
-    pub fn get_output_buffer<'a>(&'a self, io_id: i32) -> Result<Vec<u8>, String> {
+    pub fn get_output_buffer(&self, io_id: i32) -> Result<Vec<u8>, String> {
         let mut ctx = self.inner.lock().unwrap();
 
         let result = catch_unwind(AssertUnwindSafe(|| {

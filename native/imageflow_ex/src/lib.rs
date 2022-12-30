@@ -1,111 +1,113 @@
 extern crate imageflow_types;
 
-use rustler::{Binary, Encoder, Env, Error, Term};
+use rustler::types::atom::ok;
 
 mod job;
 
 mod atoms {
-    rustler::rustler_atoms! {
-        atom ok;
-        atom error;
+    rustler::atoms! {
+        saved,
+        create_job_error,
+        add_input_buffer_error,
+        add_input_file_error,
+        add_output_buffer_error,
+        save_output_to_file_error,
+        failed_destroying_job
     }
 }
 
 use job::Job;
+use rustler::{Atom, Binary};
 
-rustler::rustler_export_nifs! {
+rustler::init!(
     "Elixir.Imageflow.NIF",
     [
-        ("get_long_version_string", 0, get_long_version_string),
-        ("job_create", 0, job_create),
-        ("job_destroy", 1, job_destroy),
-        ("job_add_input_buffer", 3, job_add_input_buffer),
-        ("job_add_input_file", 3, job_add_input_file),
-        ("job_add_output_buffer", 2, job_add_output_buffer),
-        ("job_get_output_buffer", 2, job_get_output_buffer),
-        ("job_save_output_to_file", 3, job_save_output_to_file),
-        ("job_message", 3, job_message),
-    ],
-    None
-}
+        get_long_version_string,
+        job_create,
+        job_destroy,
+        job_add_input_buffer,
+        job_add_input_file,
+        job_add_output_buffer,
+        job_get_output_buffer,
+        job_save_output_to_file,
+        job_message,
+    ]
+);
 
 macro_rules! job {
-    ($id:expr) => {{
-        Job::load_from_id($id.decode()?).ok().unwrap()
-    }};
+    ($id:expr) => {
+        Job::load_from_id($id).ok().unwrap()
+    };
 }
 
-fn get_long_version_string<'a>(_env: Env<'a>, _args: &[Term<'a>]) -> String {
+#[rustler::nif]
+fn get_long_version_string() -> String {
     imageflow_types::version::one_line_version()
 }
 
-pub fn job_create<'a>(env: Env<'a>, _args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+#[rustler::nif]
+pub fn job_create() -> Result<usize, Atom> {
     match Job::create() {
-        Ok(id) => Ok((atoms::ok(), id).encode(env)),
-        Err(_e) => Err(rustler::Error::Atom("Unable to create context")),
+        Ok(id) => Ok(id),
+        Err(_e) => Err(atoms::create_job_error()),
     }
 }
 
-pub fn job_destroy<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    Job::destroy_from_id(args[0].decode()?).ok().unwrap();
-
-    Ok(atoms::ok().encode(env))
-}
-
-pub fn job_add_input_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-    let bytes: Binary = args[2].decode()?;
-
-    match job!(args[0]).add_input_buffer(io_id, bytes.as_slice()) {
-        Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(msg) => Ok((atoms::error(), msg).encode(env)),
+#[rustler::nif]
+pub fn job_destroy(id: usize) -> Result<Atom, Atom> {
+    match Job::destroy_from_id(id) {
+        Ok(_) => Ok(ok()),
+        Err(_) => Err(atoms::failed_destroying_job()),
     }
 }
 
-pub fn job_add_input_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-    let path: String = args[2].decode()?;
-
-    match job!(args[0]).add_input_file(io_id, &path) {
-        Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(msg) => Ok((atoms::error(), msg).encode(env)),
+#[rustler::nif]
+pub fn job_add_input_buffer(id: usize, io_id: i32, bytes: Binary) -> Result<(), String> {
+    match job!(id).add_input_buffer(io_id, bytes.as_slice()) {
+        Ok(_) => Ok(()),
+        Err(reason) => {
+            println!("Error adding input buffer {:?}", reason);
+            Err(reason)
+        }
     }
 }
 
-pub fn job_add_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-
-    match job!(args[0]).add_output_buffer(io_id) {
-        Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(msg) => Ok((atoms::error(), msg).encode(env)),
+#[rustler::nif]
+pub fn job_add_input_file(id: usize, io_id: i32, path: String) -> Result<Atom, String> {
+    match job!(id).add_input_file(io_id, &path) {
+        Ok(_) => Ok(ok()),
+        Err(e) => Err(e),
     }
 }
 
-pub fn job_get_output_buffer<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-
-    match job!(args[0]).get_output_buffer(io_id) {
-        Ok(buffer) => Ok((atoms::ok(), buffer).encode(env)),
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env)),
+#[rustler::nif]
+pub fn job_add_output_buffer(id: usize, io_id: i32) -> Result<Atom, String> {
+    match job!(id).add_output_buffer(io_id) {
+        Ok(_) => Ok(ok()),
+        Err(e) => Err(e),
     }
 }
 
-pub fn job_save_output_to_file<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let io_id: i32 = args[1].decode()?;
-    let path: String = args[2].decode()?;
+#[rustler::nif]
+pub fn job_get_output_buffer(id: usize, io_id: i32) -> Result<Vec<u8>, String> {
+    job!(id).get_output_buffer(io_id)
+}
 
-    match job!(args[0]).save_output_to_file(io_id, &path) {
-        Ok(_) => Ok(atoms::ok().encode(env)),
-        Err(e) => Ok((atoms::error(), e.to_string()).encode(env)),
+#[rustler::nif]
+pub fn job_save_output_to_file(id: usize, io_id: i32, path: String) -> Result<Atom, Atom> {
+    match job!(id).save_output_to_file(io_id, &path) {
+        Ok(_) => Ok(atoms::saved()),
+        Err(reason) => {
+            println!("Error saving output to file {:?}", reason);
+            Err(atoms::save_output_to_file_error())
+        }
     }
 }
 
-pub fn job_message<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let method: String = args[1].decode()?;
-    let message: String = args[2].decode()?;
-
-    match job!(args[0]).message(&method, &message) {
-        Ok(resp) => Ok((atoms::ok(), resp.response_json.encode(env)).encode(env)),
-        Err(msg) => Ok((atoms::error(), msg.encode(env)).encode(env)),
+#[rustler::nif]
+pub fn job_message(id: usize, method: String, message: String) -> Result<String, String> {
+    match job!(id).message(&method, &message) {
+        Ok(resp) => Ok(String::from_utf8_lossy(&resp.response_json).to_string()),
+        Err(msg) => Err(msg),
     }
 }
