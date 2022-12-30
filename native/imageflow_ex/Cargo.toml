@@ -10,7 +10,7 @@ path = "src/lib.rs"
 crate-type = ["dylib"]
 
 [dependencies]
-rustler = "0.21.1"
-lazy_static = "1.0"
-imageflow_core = { git = "https://github.com/imazen/imageflow", tag = "v1.5.4-rc58" }
-imageflow_types = { git = "https://github.com/imazen/imageflow", tag = "v1.5.4-rc58" }
+rustler = "0.26.0"
+lazy_static = "1.4.0"
+imageflow_core = { git = "https://github.com/imazen/imageflow", tag = "v1.7.3-rc67" }
+imageflow_types = { git = "https://github.com/imazen/imageflow", tag = "v1.7.3-rc67" }
